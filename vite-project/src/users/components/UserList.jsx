@@ -4,7 +4,11 @@ import UserItem from "./UserItem";
 
 const UserList = (props) => {
   if (props.items.length === 0) {
-    return <div className="center">No user Found</div>;
+    return (
+      <div className="center">
+        <Card>No user Found</Card>
+      </div>
+    );
   }
   return (
     <ul className="users-list">
