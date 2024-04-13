@@ -3,7 +3,7 @@ import "./UserList.css";
 import UserItem from "./UserItem";
 
 const UserList = (props) => {
-  if (props.items.length === 0) {
+  if (props.items?.length === 0) {
     return (
       <div className="center">
         <Card>No user Found</Card>
