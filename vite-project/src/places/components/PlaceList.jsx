@@ -7,12 +7,12 @@ import PlaceItem from "./PlaceItem";
 const PlaceList = (props) => {
   if (props.items.length === 0) {
     return (
-      <Card>
-        <div className="place-list center">
-          <h2>No place found. Why not create one?</h2>
-          <button>Share place</button>
-        </div>
-      </Card>
+      <div className="place-list center">
+        <Card>
+          <h2>No places found. Maybe create one?</h2>
+          <button>Share Place</button>
+        </Card>
+      </div>
     );
   }
 
