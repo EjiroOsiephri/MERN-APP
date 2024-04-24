@@ -4,6 +4,7 @@ import Card from "../../shared/components/UIElements/Card";
 import Button from "../../shared/components/FormElements/Button";
 import Modal from "../../shared/components/UIElements/Modal";
 import "./PlaceItem.css";
+import Button from "../../shared/components/FormElements/Button";
 
 const PlaceItem = (props) => {
   const [showMap, setShowMap] = useState(false);
