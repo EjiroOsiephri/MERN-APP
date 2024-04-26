@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 const DUMMY_PLACES = [
   {
     id: "p1",
-    tittle: "Empire State Building",
+    title: "Empire State Building",
     description: "One of the most famous buildings in the world",
     imageUrl:
       "https://cdn.britannica.com/73/114973-050-2DC46083/Midtown-Manhattan-Empire-State-Building-New-York.jpg",
