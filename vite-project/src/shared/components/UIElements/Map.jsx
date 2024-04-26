@@ -4,7 +4,6 @@ import "./Map.css";
 
 const Maps = (props) => {
   const mapRef = useRef(null);
-  console.log(props.center);
 
   const initializeMap = () => {
     if (mapRef.current) {
