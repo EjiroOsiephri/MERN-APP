@@ -5,16 +5,4 @@ class HttpError extends Error {
   }
 }
 
-class Car {
-  constructor(brand) {
-    this.carName = brand;
-  }
-  get cnam() {
-    return this.carName;
-  }
-  set cnam(x) {
-    this.carName = x;
-  }
-}
-
-module.exports = { HttpError, Car };
+module.exports = { HttpError };

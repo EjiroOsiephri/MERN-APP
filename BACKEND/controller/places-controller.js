@@ -1,5 +1,7 @@
-const uuid = require("uuid");
+const { uuid } = require("uuid");
 const { HttpError } = require("../models/http-error");
+
+const { validationResult } = require("express-validator");
 
 let DUMMY_PLACES = [
   {
@@ -26,24 +28,30 @@ const getPlaceById = (req, res, next) => {
   res.json(places);
 };
 
-const getPlaceByUserId = (req, res, next) => {
+const getPlacesByUserId = (req, res, next) => {
   const userId = req.params.uid;
-  const users = DUMMY_PLACES.find((creator) => creator.creator === userId);
+  const places = DUMMY_PLACES.filter((creator) => creator.creator === userId);
 
-  if (!users) {
+  if (!places || places.length === 0) {
     return next(
       new HttpError("Cannot find place with a user with a specific id", 404)
     );
   }
 
-  res.json({ users });
+  res.json({ places });
 };
 
 const createPlace = (req, res, next) => {
   const { title, description, coordinates, creator, address } = req.body;
 
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    throw new HttpError("Invalid inputs passes, please check your data", 422);
+  }
+
   const createdPlace = {
-    id: uuid(),
+    id: uuid,
     title,
     description,
     location: coordinates,
@@ -80,7 +88,7 @@ const deletePlace = (req, res, next) => {
 };
 
 exports.getPlaceById = getPlaceById;
-exports.getPlaceByUserId = getPlaceByUserId;
+exports.getPlacesdByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
 exports.deletePlace = deletePlace;
