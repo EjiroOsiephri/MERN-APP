@@ -2,6 +2,7 @@ const uuid = require("uuid");
 const { validationResult } = require("express-validator");
 
 const { HttpError } = require("../models/http-error");
+const User = require("../models/user");
 
 const DUMMY_USERS = [
   {
@@ -16,28 +17,45 @@ const getUsers = (req, res, next) => {
   res.json({ users: DUMMY_USERS });
 };
 
-const signup = (req, res, next) => {
+const signup = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    throw new HttpError("Enter valid inputs for the users field");
+    return next(new HttpError("Enter valid inputs for the users field"));
   }
-  const { name, email, password } = req.body;
+  const { name, email, password, places } = req.body;
 
-  const hasUser = DUMMY_USERS.find((u) => u.email === email);
-  if (hasUser) {
-    throw new HttpError("Could not create user, email already exists.", 422);
+  let existingUser;
+
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (error) {
+    console.log(error);
+    const err = new HttpError("User signup failed", 500);
+    return next(err);
   }
 
-  const createdUser = {
-    id: uuid,
-    name, // name: name
+  if (existingUser) {
+    const error = new HttpError("User already exists, login instead");
+    return next(error);
+  }
+
+  const createdUser = new User({
+    name,
     email,
     password,
-  };
+    images:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/NYC_Empire_State_Building.jpg/640px-NYC_Empire_State_Building.jpg",
+    places,
+  });
 
-  DUMMY_USERS.push(createdUser);
+  try {
+  } catch (error) {
+    console.log(error);
+    const err = new HttpError("Error signing up, please try again later", 500);
+    return next(err);
+  }
 
-  res.status(201).json({ user: createdUser });
+  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 };
 
 const login = (req, res, next) => {
