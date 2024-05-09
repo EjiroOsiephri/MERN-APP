@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
 import Card from "../../shared/components/UIElements/Card";
+import { useHistory } from "react-router-dom";
 import {
   VALIDATOR_EMAIL,
   VALIDATOR_MINLENGTH,
@@ -11,10 +12,15 @@ import { useForm } from "../../shared/hooks/form-hooks";
 
 import "./Auth.css";
 import { AuthContext } from "../../shared/context/Auth-Context";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 
 const Auth = () => {
-  const [isLoginMode, setIsLoginMode] = useState(true);
   const auth = useContext(AuthContext);
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState();
+
   const [formState, inputHandler, setFormData] = useForm(
     {
       email: {
@@ -32,7 +38,10 @@ const Auth = () => {
   const switchModeHandler = () => {
     if (!isLoginMode) {
       setFormData(
-        { ...formState.inputs, name: undefined },
+        {
+          ...formState.inputs,
+          name: undefined,
+        },
         formState.inputs.email.isValid && formState.inputs.password.isValid
       );
     } else {
@@ -47,57 +56,125 @@ const Auth = () => {
         false
       );
     }
-    setIsLoginMode((prevValue) => !prevValue);
+    setIsLoginMode((prevMode) => !prevMode);
   };
 
-  const authSubmitHandler = (event) => {
+  const history = useHistory();
+  const authSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log(formState.inputs);
-    auth.logIn();
+
+    setIsLoading(true);
+
+    if (isLoginMode) {
+      try {
+        const response = await fetch("http://localhost:5000/api/users/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: formState.inputs.email.value,
+            password: formState.inputs.password.value,
+          }),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(responseData.message);
+        } else {
+          history.push("/");
+        }
+
+        setIsLoading(false);
+        auth.logIn();
+      } catch (err) {
+        console.log(err);
+        setIsLoading(false);
+        setError(err.message || "Something went wrong pls try again later");
+      }
+    } else {
+      try {
+        const response = await fetch("http://localhost:5000/api/users/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formState.inputs.name.value,
+            email: formState.inputs.email.value,
+            password: formState.inputs.password.value,
+          }),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(responseData.message);
+        } else {
+          history.push("/");
+        }
+
+        setIsLoading(false);
+        auth.logIn();
+      } catch (err) {
+        console.log(err);
+        setIsLoading(false);
+        setError(err.message || "Something went wrong pls try again later");
+      }
+    }
+  };
+
+  const errorHandler = () => {
+    setError(null);
   };
 
   return (
-    <Card className="authentication">
-      <h2>LOGIN REQUIRED</h2>
-      <hr />
-      <form onSubmit={authSubmitHandler}>
-        {!isLoginMode && (
+    <>
+      <ErrorModal error={error} onClear={errorHandler} />
+      <Card className="authentication">
+        {isLoading && <LoadingSpinner asOverlay />}
+        <h2>Login Required</h2>
+        <hr />
+        <form onSubmit={authSubmitHandler}>
+          {!isLoginMode && (
+            <Input
+              element="input"
+              id="name"
+              type="text"
+              label="Your Name"
+              validators={[VALIDATOR_REQUIRE()]}
+              errorText="Please enter a name."
+              onInput={inputHandler}
+            />
+          )}
           <Input
-            type="text"
-            id="name"
             element="input"
+            id="email"
+            type="email"
+            label="E-Mail"
+            validators={[VALIDATOR_EMAIL()]}
+            errorText="Please enter a valid email address."
             onInput={inputHandler}
-            label="YOUR NAME"
-            validators={[VALIDATOR_REQUIRE()]}
-            errorText="Enter a valid username"
           />
-        )}
-        <Input
-          type="email"
-          id="email"
-          element="input"
-          onInput={inputHandler}
-          label="Email"
-          validators={[VALIDATOR_EMAIL()]}
-          errorText="Enter a valid email"
-        />
-        <Input
-          type="password"
-          element="input"
-          id="password"
-          onInput={inputHandler}
-          label="Password"
-          validators={[VALIDATOR_MINLENGTH(5)]}
-          errorText="Enter a valid password not less than 5"
-        />
-        <Button type="submit" disabled={!formState.isValid}>
-          LOGIN
+          <Input
+            element="input"
+            id="password"
+            type="password"
+            label="Password"
+            validators={[VALIDATOR_MINLENGTH(5)]}
+            errorText="Please enter a valid password, at least 5 characters."
+            onInput={inputHandler}
+          />
+          <Button type="submit" disabled={!formState.isValid}>
+            {isLoginMode ? "LOGIN" : "SIGNUP"}
+          </Button>
+        </form>
+        <Button inverse onClick={switchModeHandler}>
+          SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
         </Button>
-      </form>
-      <Button inverse onClick={switchModeHandler}>
-        SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
-      </Button>
-    </Card>
+      </Card>
+    </>
   );
 };
 
