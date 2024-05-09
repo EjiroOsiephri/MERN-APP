@@ -13,8 +13,17 @@ const DUMMY_USERS = [
   },
 ];
 
-const getUsers = (req, res, next) => {
-  res.json({ users: DUMMY_USERS });
+const getUsers = async (req, res, next) => {
+  let users;
+  try {
+    users = await User.find({}, "-password");
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("Cannot get users data, try again later", 500);
+    return next(error);
+  }
+
+  res.json({ user: users.map((user) => user.toObject({ getters: true })) });
 };
 
 const signup = async (req, res, next) => {
@@ -22,7 +31,7 @@ const signup = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Enter valid inputs for the users field"));
   }
-  const { name, email, password, places } = req.body;
+  const { name, email, password } = req.body;
 
   let existingUser;
 
@@ -43,12 +52,13 @@ const signup = async (req, res, next) => {
     name,
     email,
     password,
-    images:
+    image:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/NYC_Empire_State_Building.jpg/640px-NYC_Empire_State_Building.jpg",
-    places,
+    places: [],
   });
 
   try {
+    await createdUser.save();
   } catch (error) {
     console.log(error);
     const err = new HttpError("Error signing up, please try again later", 500);
@@ -58,14 +68,22 @@ const signup = async (req, res, next) => {
   res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 };
 
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const identifiedUser = DUMMY_USERS.find((u) => u.email === email);
-  if (!identifiedUser || identifiedUser.password !== password) {
-    throw new HttpError(
-      "Could not identify user, credentials seem to be wrong.",
-      401
+  let existingUser;
+
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (error) {
+    console.log(error);
+    const err = new HttpError("User signup failed", 500);
+    return next(err);
+  }
+
+  if (!existingUser || existingUser.password !== password) {
+    return next(
+      new HttpError("Could not log in, credentials seem to be wrong.", 401)
     );
   }
 

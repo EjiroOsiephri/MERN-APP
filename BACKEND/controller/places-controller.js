@@ -3,6 +3,8 @@ const { HttpError } = require("../models/http-error");
 
 const { validationResult } = require("express-validator");
 const Place = require("../models/place");
+const User = require("../models/user");
+const mongoose = require("mongoose");
 const { getCoordsForAddress } = require("../util/location");
 
 const getPlaceById = async (req, res, next) => {
@@ -71,6 +73,8 @@ const createPlace = async (req, res, next) => {
     return next(error);
   }
 
+  let users;
+
   const createdPlace = new Place({
     title,
     description,
@@ -82,7 +86,25 @@ const createPlace = async (req, res, next) => {
   });
 
   try {
-    await createdPlace.save();
+    users = await User.findById(creator);
+  } catch (error) {
+    console.log(error);
+    const err = new HttpError("An error occured,try again later", 500);
+    return next(err);
+  }
+
+  if (!users) {
+    const error = new HttpError("Could not find user for provided id");
+    return next(error);
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await createdPlace.save({ session: sess });
+    users.places.push(createdPlace);
+    await users.save({ session: sess });
+    await sess.commitTransaction();
   } catch (error) {
     console.log(error);
   }
@@ -131,7 +153,7 @@ const deletePlace = async (req, res, next) => {
   let place;
 
   try {
-    place = await Place.findById(placeId);
+    place = await Place.findById(placeId).populate("creator");
   } catch (err) {
     console.log(err);
     const error = new HttpError(
@@ -141,8 +163,21 @@ const deletePlace = async (req, res, next) => {
     return next(error);
   }
 
+  if (!place) {
+    const error = new HttpError(
+      "Could not find place with corresponding user id",
+      404
+    );
+    return next(error);
+  }
+
   try {
-    await place.deleteOne({ placeId });
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await place.deleteOne({ placeId, session: sess });
+    place.creator.places.pull(place);
+    await place.creator.save({ session: sess });
+    await sess.commitTransaction();
   } catch (err) {
     console.log(err);
     const error = new HttpError(
