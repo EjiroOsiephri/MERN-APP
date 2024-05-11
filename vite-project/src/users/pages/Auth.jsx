@@ -3,6 +3,7 @@ import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
 import Card from "../../shared/components/UIElements/Card";
 import { useHistory } from "react-router-dom";
+import { useHttpClient } from "../../shared/hooks/http-hooks";
 import {
   VALIDATOR_EMAIL,
   VALIDATOR_MINLENGTH,
@@ -18,8 +19,6 @@ import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 const Auth = () => {
   const auth = useContext(AuthContext);
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
 
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -59,40 +58,27 @@ const Auth = () => {
     setIsLoginMode((prevMode) => !prevMode);
   };
 
+  const { isLoading, clearError, sendRequest, error } = useHttpClient();
+
   const history = useHistory();
   const authSubmitHandler = async (event) => {
     event.preventDefault();
 
-    setIsLoading(true);
-
     if (isLoginMode) {
       try {
-        const response = await fetch("http://localhost:5000/api/users/login", {
-          method: "POST",
-          headers: {
+        await sendRequest(
+          "http://localhost:5000/api/users/login",
+          "POST",
+          {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
+          JSON.stringify({
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
-          }),
-        });
-
-        const responseData = await response.json();
-
-        if (!response.ok) {
-          throw new Error(responseData.message);
-        } else {
-          history.push("/");
-        }
-
-        setIsLoading(false);
+          })
+        );
         auth.logIn();
-      } catch (err) {
-        console.log(err);
-        setIsLoading(false);
-        setError(err.message || "Something went wrong pls try again later");
-      }
+      } catch (err) {}
     } else {
       try {
         const response = await fetch("http://localhost:5000/api/users/signup", {
