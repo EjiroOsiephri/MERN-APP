@@ -1,41 +1,50 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PlaceList from "../components/PlaceList";
 
 import { useParams } from "react-router-dom";
+import { useHttpClient } from "../../shared/hooks/http-hooks";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
-const DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous buildings in the world",
-    imageUrl:
-      "https://cdn.britannica.com/73/114973-050-2DC46083/Midtown-Manhattan-Empire-State-Building-New-York.jpg",
-    address: "20 W 34th St., New York, NY 10001, United States",
-    location: {
-      lat: 40.7484445,
-      lon: -73.9882393,
-    },
-    creator: "u1",
-  },
-  {
-    id: "p2",
-    title: "Empire State Building",
-    description: "One of the most famous buildings in the world",
-    imageUrl:
-      "https://cdn.britannica.com/73/114973-050-2DC46083/Midtown-Manhattan-Empire-State-Building-New-York.jpg",
-    address: "20 W 34th St., New York, NY 10001, United States",
-    location: {
-      lat: 40.7484445,
-      lon: -73.9882393,
-    },
-    creator: "u2",
-  },
-];
+const UserPlaces = () => {
+  const [loadedPlaces, setLoadedPlaces] = useState([]);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
-const UserPlace = () => {
-  const userID = useParams().userId;
-  const loadedPlaces = DUMMY_PLACES.filter((place) => place.creator === userID);
-  return <PlaceList items={loadedPlaces} />;
+  const userId = useParams().userId;
+
+  useEffect(() => {
+    const fetchPlaces = async () => {
+      try {
+        const responseData = await sendRequest(
+          `https://mern-app-4.onrender.com/api/places/users/${userId}`
+        );
+        setLoadedPlaces(responseData.places);
+      } catch (err) {
+        return <ErrorModal error={err} onClear={clearError} />;
+      }
+    };
+    fetchPlaces();
+  }, [sendRequest, userId]);
+
+  const placeDeletedHandler = (deletedPlaceId) => {
+    setLoadedPlaces((prevPlaces) =>
+      prevPlaces.filter((place) => place.id !== deletedPlaceId)
+    );
+  };
+
+  return (
+    <React.Fragment>
+      {error && <ErrorModal error={error} onClear={clearError} />}
+      {isLoading && (
+        <div className="center">
+          <LoadingSpinner />
+        </div>
+      )}
+      {!isLoading && loadedPlaces && (
+        <PlaceList onDeletePlace={placeDeletedHandler} items={loadedPlaces} />
+      )}
+    </React.Fragment>
+  );
 };
 
-export default UserPlace;
+export default UserPlaces;

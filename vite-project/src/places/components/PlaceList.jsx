@@ -11,7 +11,7 @@ const PlaceList = (props) => {
       <div className="place-list center">
         <Card>
           <h2>No places found. Maybe create one?</h2>
-          <Button to="/places/new">Share Place</Button>
+          <Button to="/places/new">Create new Place</Button>
         </Card>
       </div>
     );
@@ -24,9 +24,10 @@ const PlaceList = (props) => {
           <PlaceItem
             key={item.id}
             id={item.id}
-            image={item.imageUrl}
+            image={item.image}
             title={item.title}
             description={item.description}
+            onDelete={props.onDeletePlace}
             address={item.address}
             creatorId={item.creator}
             coordinates={item.location}

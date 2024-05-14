@@ -2,41 +2,29 @@ import React, { useEffect, useState } from "react";
 import UserList from "../components/UserList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import { useHttpClient } from "../../shared/hooks/http-hooks";
 
 const Users = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null); // Initialize error state with null
-  const [loadedUsers, setLoadedUsers] = useState([]); // Initialize loadedUsers state with an empty array
+  const [loadedUsers, setLoadedUsers] = useState([]);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoading(true);
       try {
-        const res = await fetch("http://localhost:5000/api/users");
-        const responseData = await res.json();
-
-        if (!res.ok) {
-          throw new Error(responseData.message);
-        }
+        const responseData = await sendRequest(
+          "https://mern-app-4.onrender.com/api/users"
+        );
 
         setLoadedUsers(responseData.user);
-        setIsLoading(false);
-      } catch (error) {
-        setIsLoading(false);
-        setError(error.message);
-      }
+      } catch (error) {}
     };
 
     fetchUsers();
-  }, []);
-
-  const errorHandler = () => {
-    setError(null);
-  };
+  }, [sendRequest]);
 
   return (
     <>
-      <ErrorModal error={error} onClear={errorHandler} />
+      <ErrorModal error={error} onClear={clearError} />
       {isLoading && (
         <div className="center">
           <LoadingSpinner asOverlay />

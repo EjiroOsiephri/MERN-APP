@@ -1,47 +1,45 @@
-import { useEffect } from "react";
-import { useState, useCallback, useRef } from "react";
-import { useHistory } from "react-router-dom";
+import { useState, useCallback, useRef, useEffect } from "react";
 
-export const useHttpClient = (
-  url,
-  method = "GET",
-  body = null,
-  headers = {}
-) => {
+export const useHttpClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
-  const history = useHistory();
 
-  const activeHttpRequest = useRef([]);
+  const activeHttpRequests = useRef([]);
 
-  const sendRequest = useCallback(async () => {
-    setIsLoading(true);
+  const sendRequest = useCallback(
+    async (url, method = "GET", body = null, headers = {}) => {
+      setIsLoading(true);
+      const httpAbortCtrl = new AbortController();
+      activeHttpRequests.current.push(httpAbortCtrl);
 
-    const httpAbortController = new AbortController();
-    activeHttpRequest.current.push(httpAbortController);
+      try {
+        const response = await fetch(url, {
+          method,
+          body,
+          headers,
+          signal: httpAbortCtrl.signal,
+        });
 
-    try {
-      const response = await fetch(url, {
-        method,
-        headers,
-        body,
-        signal: httpAbortController.signal,
-      });
+        const responseData = await response.json();
 
-      const responseData = await response.json();
+        activeHttpRequests.current = activeHttpRequests.current.filter(
+          (reqCtrl) => reqCtrl !== httpAbortCtrl
+        );
 
-      if (!response.ok) {
-        throw new Error(responseData.message);
+        if (!response.ok) {
+          throw new Error(responseData.message);
+        }
+
+        setIsLoading(false);
+        return responseData;
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+        throw err;
       }
-      history.push("/");
-      setIsLoading(false);
-      return responseData;
-    } catch (error) {
-      setIsLoading(false);
-      setError(error.message);
-      throw error;
-    }
-  }, []);
+    },
+    []
+  );
 
   const clearError = () => {
     setError(null);
@@ -49,9 +47,9 @@ export const useHttpClient = (
 
   useEffect(() => {
     return () => {
-      httpAbortController.current.forEach((abortCtrl) => abortCtrl.abort());
+      activeHttpRequests.current.forEach((abortCtrl) => abortCtrl.abort());
     };
   }, []);
 
-  return { isLoading, error, clearError, sendRequest };
+  return { isLoading, error, sendRequest, clearError };
 };
