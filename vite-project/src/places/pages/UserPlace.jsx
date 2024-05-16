@@ -16,7 +16,7 @@ const UserPlaces = () => {
     const fetchPlaces = async () => {
       try {
         const responseData = await sendRequest(
-          `https://mern-app-4.onrender.com/api/places/users/${userId}`
+          `http://localhost:5000/api/places/users/${userId}`
         );
         setLoadedPlaces(responseData.places);
       } catch (err) {

@@ -12,7 +12,7 @@ const Users = () => {
     const fetchUsers = async () => {
       try {
         const responseData = await sendRequest(
-          "https://mern-app-4.onrender.com/api/users"
+          "http://localhost:5000/api/users"
         );
 
         setLoadedUsers(responseData.user);

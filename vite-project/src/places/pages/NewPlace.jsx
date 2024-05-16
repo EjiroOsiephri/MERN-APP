@@ -38,7 +38,7 @@ const NewPlace = () => {
     event.preventDefault();
     try {
       await sendRequest(
-        "https://mern-app-4.onrender.com/api/places",
+        "http://localhost:5000/api/places",
         "POST",
         JSON.stringify({
           title: formState.inputs.title.value,

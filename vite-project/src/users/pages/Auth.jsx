@@ -66,7 +66,7 @@ const Auth = () => {
     if (isLoginMode) {
       try {
         const responseData = await sendRequest(
-          "https://mern-app-4.onrender.com/api/users/login",
+          "http://localhost:5000/api/users/login",
           "POST",
           JSON.stringify({
             email: formState.inputs.email.value,
@@ -82,7 +82,7 @@ const Auth = () => {
     } else {
       try {
         const responseData = await sendRequest(
-          "https://mern-app-4.onrender.com/api/users/signup",
+          "http://localhost:5000/api/users/signup",
           "POST",
           JSON.stringify({
             name: formState.inputs.name.value,
