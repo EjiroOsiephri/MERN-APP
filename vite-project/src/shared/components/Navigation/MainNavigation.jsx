@@ -38,7 +38,7 @@ const MainNavigation = () => {
           <span></span>
         </button>
         <h1 className="main-navigation__title">
-          <Link to="/">SPOTBUILDER</Link>
+          <Link to="/">PLACEBUILDER</Link>
         </h1>
         <nav className="main-navigation__header-nav">
           <NavLinks />
