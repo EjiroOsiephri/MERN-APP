@@ -1,10 +1,11 @@
-const { uuid } = require("uuid");
+const { v4: uuid } = require("uuid");
 const { HttpError } = require("../models/http-error");
 
 const { validationResult } = require("express-validator");
 const Place = require("../models/place");
 const User = require("../models/user");
 const mongoose = require("mongoose");
+const fs = require("fs");
 const { getCoordsForAddress } = require("../util/location");
 
 const getPlaceById = async (req, res, next) => {
@@ -62,6 +63,11 @@ const getPlacesByUserId = async (req, res, next) => {
 const createPlace = async (req, res, next) => {
   const { title, description, creator, address } = req.body;
 
+  // Validate input types
+  if (typeof title !== "string") {
+    return next(new HttpError("Title must be a string", 422));
+  }
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -84,10 +90,11 @@ const createPlace = async (req, res, next) => {
     description,
     location: coordinates,
     address,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/NYC_Empire_State_Building.jpg/640px-NYC_Empire_State_Building.jpg",
+    image: req.file.path,
     creator,
   });
+
+  console.log(createdPlace);
 
   try {
     users = await User.findById(creator);
@@ -175,6 +182,8 @@ const deletePlace = async (req, res, next) => {
     return next(error);
   }
 
+  const imagePath = place.image;
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -190,6 +199,8 @@ const deletePlace = async (req, res, next) => {
     );
     return next(error);
   }
+
+  fs.unlink(imagePath);
 
   res.status(200).json({ message: "Deleted place" });
 };

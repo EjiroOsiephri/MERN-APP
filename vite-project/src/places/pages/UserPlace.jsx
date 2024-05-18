@@ -16,9 +16,10 @@ const UserPlaces = () => {
     const fetchPlaces = async () => {
       try {
         const responseData = await sendRequest(
-          `http://localhost:5000/api/places/users/${userId}`
+          `http://localhost:5000/api/places/user/${userId}`
         );
         setLoadedPlaces(responseData.places);
+        console.log(responseData.places);
       } catch (err) {
         return <ErrorModal error={err} onClear={clearError} />;
       }

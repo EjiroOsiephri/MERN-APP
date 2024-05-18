@@ -30,7 +30,6 @@ const ImageUpload = (props) => {
 
     if (event.target.files && event.target.files.length === 1) {
       formPicker = event.target.files[0];
-      console.log(formPicker);
       setFiles(formPicker);
       setIsValid(true);
       fileIsValid = true;
