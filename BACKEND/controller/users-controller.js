@@ -1,17 +1,9 @@
 const uuid = require("uuid");
 const { validationResult } = require("express-validator");
-
 const { HttpError } = require("../models/http-error");
 const User = require("../models/user");
-
-const DUMMY_USERS = [
-  {
-    id: "u1",
-    name: "Max Schwarz",
-    email: "test@test.com",
-    password: "testers",
-  },
-];
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const getUsers = async (req, res, next) => {
   let users;
@@ -29,12 +21,11 @@ const getUsers = async (req, res, next) => {
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(new HttpError("Enter valid inputs for the users field"));
+    return next(new HttpError("Enter valid inputs for the users field", 422));
   }
   const { name, email, password } = req.body;
 
   let existingUser;
-
   try {
     existingUser = await User.findOne({ email: email });
   } catch (error) {
@@ -44,14 +35,22 @@ const signup = async (req, res, next) => {
   }
 
   if (existingUser) {
-    const error = new HttpError("User already exists, login instead");
+    const error = new HttpError("User already exists, login instead", 422);
     return next(error);
+  }
+
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (error) {
+    const err = new HttpError("Error hashing password, please try again", 500);
+    return next(err);
   }
 
   const createdUser = new User({
     name,
     email,
-    password,
+    password: hashedPassword,
     image: req.file.path,
     places: [],
   });
@@ -64,7 +63,27 @@ const signup = async (req, res, next) => {
     return next(err);
   }
 
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      {
+        userId: createdUser.id,
+        email: createdUser.email,
+      },
+      "super-secret",
+      { expiresIn: "1hr" }
+    );
+  } catch (error) {
+    console.log(error);
+    const err = new HttpError("Error signing up, please try again later", 500);
+    return next(err);
+  }
+
+  res.status(201).json({
+    userId: createdUser.id,
+    email: createdUser.email,
+    token: token,
+  });
 };
 
 const login = async (req, res, next) => {
@@ -76,19 +95,54 @@ const login = async (req, res, next) => {
     existingUser = await User.findOne({ email: email });
   } catch (error) {
     console.log(error);
-    const err = new HttpError("User signup failed", 500);
+    const err = new HttpError("Login failed, please try again later", 500);
     return next(err);
   }
 
-  if (!existingUser || existingUser.password !== password) {
+  if (!existingUser) {
     return next(
       new HttpError("Could not log in, credentials seem to be wrong.", 401)
     );
   }
 
+  let isValidPassword = false;
+
+  try {
+    isValidPassword = await bcrypt.compare(password, existingUser.password);
+  } catch (error) {
+    const err = new HttpError(
+      "Could not log user in, credentials seem to be wrong.",
+      500
+    );
+    return next(err);
+  }
+
+  if (!isValidPassword) {
+    return next(
+      new HttpError("Could not log in, credentials seem to be wrong.", 401)
+    );
+  }
+
+  let token;
+  try {
+    token = jwt.sign(
+      {
+        userId: existingUser.id,
+        email: existingUser.email,
+      },
+      "super-secret",
+      { expiresIn: "1hr" }
+    );
+  } catch (error) {
+    console.log(error);
+    const err = new HttpError("Error logging in, please try again later", 500);
+    return next(err);
+  }
+
   res.json({
-    message: "Logged in!",
-    user: existingUser.toObject({ getters: true }),
+    userId: existingUser.id,
+    email: existingUser.email,
+    token: token,
   });
 };
 

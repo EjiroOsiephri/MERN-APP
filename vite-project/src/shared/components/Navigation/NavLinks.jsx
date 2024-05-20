@@ -10,6 +10,8 @@ const NavLinks = () => {
   const logoutHandler = () => {
     auth.logOut();
   };
+
+  console.log(auth);
   return (
     <ul className="nav-links">
       <li>

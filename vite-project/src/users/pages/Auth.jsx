@@ -82,7 +82,7 @@ const Auth = () => {
             "Content-Type": "application/json",
           }
         );
-        auth.logIn(responseData.user.id);
+        auth.logIn(responseData.userId);
         history.push("/");
       } catch (err) {}
     } else {
@@ -99,7 +99,7 @@ const Auth = () => {
           formData
         );
 
-        auth.logIn(responseData.user.id);
+        auth.logIn(responseData.userId);
         history.push("/");
       } catch (err) {}
     }
