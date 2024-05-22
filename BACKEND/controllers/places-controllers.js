@@ -61,7 +61,7 @@ const getPlacesByUserId = async (req, res, next) => {
 };
 
 const createPlace = async (req, res, next) => {
-  const { title, description, creator, address } = req.body;
+  const { title, description, address } = req.body;
 
   // Validate input types
   if (typeof title !== "string") {
@@ -91,13 +91,13 @@ const createPlace = async (req, res, next) => {
     location: coordinates,
     address,
     image: req.file.path,
-    creator,
+    creator: req.userData.userId,
   });
 
   console.log(createdPlace);
 
   try {
-    users = await User.findById(creator);
+    users = await User.findById(req.userData.userId);
   } catch (error) {
     console.log(error);
     const err = new HttpError("An error occured,try again later", 500);
