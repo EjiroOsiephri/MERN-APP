@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import L from "leaflet";
 
 import "./Map.css";
 
@@ -35,7 +36,7 @@ const Map = (props) => {
 
   useEffect(() => {
     initializeMap();
-  }, [props.center, props.zoom]);
+  }, [props.center, props.zoom, initializeMap]);
 
   return (
     <div

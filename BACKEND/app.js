@@ -1,4 +1,3 @@
-const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -13,6 +12,8 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use("/uploads/images", express.static(path.join("uploads", "images")));
+
+app.use(express.static(path.join(__dirname, "build")));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -64,3 +65,7 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+});
