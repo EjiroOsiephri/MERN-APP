@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -49,7 +48,13 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    `mongodb+srv://Ejiro765:srpPgl4SlyDov1dX@cluster0.o2pnoz2.mongodb.net/mern?retryWrites=true&w=majority&appName=Cluster0`
+    `mongodb+srv://Ejiro765:srpPgl4SlyDov1dX@cluster0.o2pnoz2.mongodb.net/mern?retryWrites=true&w=majority`,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    }
   )
   .then(() => {
     app.listen(5000, () => {
