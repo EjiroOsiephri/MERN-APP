@@ -36,7 +36,7 @@ const Map = (props) => {
 
   useEffect(() => {
     initializeMap();
-  }, [props.center, props.zoom, initializeMap]);
+  }, [props.center, props.zoom]);
 
   return (
     <div
