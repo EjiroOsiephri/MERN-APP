@@ -40,6 +40,8 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
+const PORT = process.env.PORT || 5000;
+
 mongoose
   .connect(
     `mongodb+srv://Ejiro765:srpPgl4SlyDov1dX@cluster0.o2pnoz2.mongodb.net/mern?retryWrites=true&w=majority`,
@@ -51,8 +53,8 @@ mongoose
     }
   )
   .then(() => {
-    app.listen(5000, () => {
-      console.log("Server and mongo is listening on port 5000");
+    app.listen(PORT, () => {
+      console.log(`Server and mongo is listening on port ${PORT}`);
     });
   })
   .catch((err) => {
