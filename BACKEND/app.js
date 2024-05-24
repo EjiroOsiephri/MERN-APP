@@ -13,8 +13,6 @@ app.use(bodyParser.json());
 
 app.use("/uploads/images", express.static(path.join("uploads", "images")));
 
-app.use(express.static(path.join(__dirname, "build")));
-
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -35,11 +33,6 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-  if (req.file) {
-    fs.unlink(req.file.path, (err) => {
-      console.log(err);
-    });
-  }
   if (res.headerSent) {
     return next(error);
   }
@@ -66,6 +59,4 @@ mongoose
     console.log(err);
   });
 
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "build", "index.html"));
-});
+module.exports = app;
