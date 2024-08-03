@@ -3,13 +3,56 @@
   text-align: center;
 }
 
+.authentication h2 {
+  text-align: left;
+}
+
 .authentication {
-  width: 90%;
-  max-width: 25rem;
-  margin: 7rem auto;
+  display: flex;
+  margin: 0 auto;
+  padding: 0.2em;
+  width: 80%;
+  justify-content: space-around;
+  height: auto;
   text-align: center;
+  flex-wrap: wrap;
+}
+
+.authentication img {
+  border-radius: 10px;
+  max-width: 100%;
+  height: auto;
+}
+
+.auth-text-wrapper {
+  display: flex;
+  width: 30%;
+  margin-right: 3em;
+  padding: 1em;
+  flex-direction: column;
+}
+
+img {
+  object-fit: cover;
 }
 
 .authentication form {
   margin-bottom: 1rem;
+}
+
+@media screen and (max-width: 1248px) {
+  .authentication {
+    width: 100%;
+    margin: unset;
+    gap: 40px;
+    height: auto;
+    flex-direction: column;
+  }
+
+  .auth-text-wrapper {
+    width: 80%;
+    padding: unset;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+  }
 }

@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@maptiler/sdk": "^2.0.1",
-    "binary": "^0.3.0",
-    "google-maps-react": "^2.0.6"
-  }
-}
