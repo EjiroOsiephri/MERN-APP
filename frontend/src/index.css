@@ -10,10 +10,13 @@ html {
 
 body {
   margin: 0;
+  height: 100%;
   background: #4d4d4d;
-  background-image: url("../src/assets/beatiful.jpg") !important;
+  background-image: url("../src/assets/beatiful.jpg");
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .slide-in-left-enter {
