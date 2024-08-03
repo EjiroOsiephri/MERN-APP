@@ -13,6 +13,7 @@
 
 main {
   margin-top: 5rem;
+  height: 100vh;
 }
 
 @media (min-width: 768px) {
