@@ -32,7 +32,7 @@ const PlaceItem = (props) => {
     setShowConfirmModal(false);
     try {
       await sendRequest(
-        `http://localhost:5000/api/places/${props.id}`,
+        `https://mern-app-4.onrender.com/api/places/${props.id}`,
         "DELETE",
         null,
         {

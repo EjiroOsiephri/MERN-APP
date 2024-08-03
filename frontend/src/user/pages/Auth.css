@@ -19,7 +19,7 @@
 }
 
 .authentication img {
-  border-radius: 10px;
+  border-radius: 5px;
   max-width: 100%;
   height: auto;
 }
@@ -53,6 +53,7 @@ img {
     width: 80%;
     padding: unset;
     margin: 0 auto;
-    margin-bottom: 1rem;
+    margin-top: -0.8rem;
+    margin-bottom: 1.2rem;
   }
 }
